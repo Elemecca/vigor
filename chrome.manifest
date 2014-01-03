@@ -1,0 +1,7 @@
+
+content flatascii chrome/content/
+
+# replace the default nsIMsgComposeService implementation with our own
+# this lets us divert plaintext messages to our new compose window
+component {c5b7a892-4ba1-4a20-85c6-c21ae56e492e} components/ProxyMsgComposeService.js
+contract @mozilla.org/messengercompose;1 {c5b7a892-4ba1-4a20-85c6-c21ae56e492e}

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   -->
+
+<?xml-stylesheet href="chrome://messenger/skin/" type="text/css" ?>
+
+<!DOCTYPE window [
+  <!ENTITY % messengercomposeDTD SYSTEM "chrome://messenger/locale/messengercompose/messengercompose.dtd" >
+  %messengercomposeDTD;
+  <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd" >
+  %brandDTD;
+  <!ENTITY % charsetDTD SYSTEM "chrome://global/locale/charsetOverlay.dtd" >
+  %charsetDTD;
+  <!ENTITY % customizeToolbarDTD SYSTEM "chrome://global/locale/customizeToolbar.dtd">
+  %customizeToolbarDTD;
+  <!ENTITY % textcontextDTD SYSTEM "chrome://global/locale/textcontext.dtd">
+  %textcontextDTD;
+  <!ENTITY % viewZoomOverlayDTD SYSTEM "chrome://messenger/locale/viewZoomOverlay.dtd">
+  %viewZoomOverlayDTD;
+]>
+
+<window id="flatascii-compose-window"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        title="&msgComposeWindow.title;"
+        windowtype="msgcompose"
+        macanimationtype="document"
+        toggletoolbar="true"
+        persist="screenX screenY width height sizemode"
+        fullscreenbutton="true">
+
+  <description>Hello, Composer.</description>
+</window>
