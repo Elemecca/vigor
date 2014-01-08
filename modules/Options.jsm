@@ -61,7 +61,7 @@ P.setVim = function (file) {
     this._vim_desc.textContent = "Checking...";
 
     VimChecker.check( file, (function (result) {
-        this._vim_desc.textContent = result.getFullOutput();
+        result.buildOutput( this._vim_desc );
         this._vim_button.disabled = false;
     }).bind( this ) );
 }
