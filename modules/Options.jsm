@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const Cu = Components.utils,
-      Ci = Components.interfaces;
+      Ci = Components.interfaces,
+      Cc = Components.classes;
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 
@@ -12,6 +13,10 @@ const Options = function (document) {
     this._vim_path   = document.getElementById( "flatascii-vim-path" );
     this._vim_button = document.getElementById( "flatascii-vim-choose" );
     this._vim_desc   = document.getElementById( "flatascii-vim-desc" );
+
+    this._vim_button.addEventListener(
+            "command", this.chooseVim.bind( this ), false );
+
     this.doStuff();
 };
 const P = Options.prototype = {};
@@ -21,6 +26,28 @@ P.doStuff = function() {
     this._vim_button.disabled = false;
     this._vim_desc.value = "Why hallo thar!\nfoo!";
 };
+
+P.chooseVim = function() {
+    if (null == this._vim_picker) {
+        this._vim_picker = Cc[ "@mozilla.org/filepicker;1" ]
+                .createInstance( Ci.nsIFilePicker );
+        this._vim_picker.init(
+                this._vim_button.ownerDocument.defaultView,
+                "Choose Vim Executable",
+                Ci.nsIFilePicker.modeOpen );
+        this._vim_picker.appendFilters( Ci.nsIFilePicker.filterApps );
+    }
+
+    this._vim_picker.open( (function (result) {
+        if (Ci.nsIFilePicker.returnOK != result) return;
+
+        this.setVim( this._vim_picker.file.path );
+    }).bind( this ) );
+};
+
+P.setVim = function (path) {
+    this._vim_path.value = path;
+}
 
 P.destroy = function() {
     // make sure we forget all DOM nodes to prevent leaks
