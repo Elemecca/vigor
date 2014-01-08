@@ -19,10 +19,6 @@ const Options = function (document) {
     this._vim_button.addEventListener(
             "command", this.chooseVim.bind( this ), false );
 
-    this._vim_desc.textContent = "";
-    this._vim_desc.style.whiteSpace = "pre";
-    this._vim_desc.style.fontFamily = "monospace";
-
     this.loadPrefs();
 };
 const P = Options.prototype = {};
@@ -76,30 +72,25 @@ P._showVimCheck = function (result) {
         error_box.style.border = "2px solid rgba( 255, 0, 0, 0.8 )";
         error_box.style.background = "rgba( 255, 0, 0, 0.25 )";
         error_box.style.padding = "0.5ex";
-        error_box.style.marginBottom = "0.5em";
+        error_box.style.marginTop = "0.25em";
         error_box.textContent = result.error;
         element.appendChild( error_box );
     }
 
     const output_box = document.createElement( 'div' );
     output_box.style.display = "block";
+    output_box.style.maxWidth = "80ex";
+    output_box.style.whiteSpace = "pre-wrap";
+    output_box.style.fontFamily = "monospace";
+    output_box.style.fontSize = "80%";
     output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
     output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
     output_box.style.padding = "0.5ex";
-    output_box.style.fontSize = "80%";
+    output_box.style.marginTop = "0.25em";
     element.appendChild( output_box );
-    
-    const summary_box = document.createElement( 'div' );
-    summary_box.style.display = "block";
-    summary_box.style.whiteSpace = "pre";
-    summary_box.textContent = result.summary;
-    output_box.appendChild( summary_box );
 
-    const feat_box = document.createElement( 'div' );
-    feat_box.style.display = "block";
-    feat_box.style.whiteSpace = "normal";
-    feat_box.style.maxWidth = "80ex";
-    output_box.appendChild( feat_box );
+    output_box.appendChild(
+            document.createTextNode( result.summary ) );
     
     const keys = Object.keys( result.features ).sort(
             function (a, b) { return a.localeCompare( b ) } );
@@ -110,8 +101,8 @@ P._showVimCheck = function (result) {
         span.style.display = "inline";
         span.style.color = (feature.enabled ? "green" : "red");
         span.textContent = feature.string;
-        feat_box.appendChild( span );
-        feat_box.appendChild( document.createTextNode( " " ) );
+        output_box.appendChild( span );
+        output_box.appendChild( document.createTextNode( " " ) );
     }
 
     this._vim_desc.parentNode.replaceChild( element, this._vim_desc );
