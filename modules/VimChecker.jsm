@@ -14,8 +14,14 @@ const VimCheckerResult = function (result) {
 
     if (0 != result.exitCode) {
         this._error = "command returned " + result.exitCode;
-    } else {
-        this._parseOutput();
+        return;
+    }
+
+    if (!this._parseOutput()) return;
+
+    if (!(this._features[ "netbeans_intg" ] || {}).enabled) {
+        this._error = "NetBeans integration protocol is not supported";
+        return;
     }
 };
 const P = VimCheckerResult.prototype = {};
@@ -69,22 +75,54 @@ P._parseOutput = function() {
     return true;
 }
 
+Object.defineProperty( P, 'ok', {
+    get: function() {
+        return ('undefined' == typeof this._error);
+    },
+});
+
 P.buildOutput = function (parent) {
     const document = parent.ownerDocument;
+    const fragment = document.createDocumentFragment();
 
-    parent.textContent = this._summary;
+    if (!this.ok) {
+        const error_box = document.createElement( 'div' );
+        error_box.style.display = "block";
+        error_box.style.border = "2px solid rgba( 255, 0, 0, 0.8 )";
+        error_box.style.background = "rgba( 255, 0, 0, 0.25 )";
+        error_box.style.padding = "0.5ex";
+        error_box.style.marginBottom = "0.5em";
+        error_box.textContent = this._error;
+        fragment.appendChild( error_box );
+    }
+
+    const output_box = document.createElement( 'div' );
+    output_box.style.display = "block";
+    output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
+    output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
+    output_box.style.padding = "0.5ex";
+    output_box.style.fontSize = "80%";
+    fragment.appendChild( output_box );
+    
+    const summary_box = document.createElement( 'div' );
+    summary_box.style.display = "block";
+    summary_box.style.whiteSpace = "pre";
+    summary_box.textContent = this._summary;
+    output_box.appendChild( summary_box );
 
     const feat_box = document.createElement( 'div' );
     feat_box.style.display = "block";
     feat_box.style.whiteSpace = "normal";
     feat_box.style.maxWidth = "80ex";
+    output_box.appendChild( feat_box );
     
-    for (var key in this._features) {
-        if (!this._features.hasOwnProperty( key )) continue;
-        var feature = this._features[ key ];
+    const keys = Object.keys( this._features ).sort( function (a, b) {
+        return a.localeCompare( b )
+    } );
+    for (var idx = 0; idx < keys.length; idx++) {
+        var feature = this._features[ keys[ idx ] ];
 
         var span = document.createElement( "span" );
-        //span.style.minWidth = "20ex";
         span.style.display = "inline";
         span.style.color = (feature.enabled ? "green" : "red");
         span.textContent = feature.string;
@@ -92,7 +130,8 @@ P.buildOutput = function (parent) {
         feat_box.appendChild( document.createTextNode( " " ) );
     }
 
-    parent.appendChild( feat_box );
+    parent.textContent = "";
+    parent.appendChild( fragment );
 };
 
 const VimChecker = {}
