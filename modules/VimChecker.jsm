@@ -5,21 +5,25 @@
 const Cu = Components.utils,
       Ci = Components.interfaces;
 
+Cu.import( "resource://gre/modules/Timer.jsm" );
 Cu.import( "resource://flatascii/lib/subprocess.jsm" );
 
 const VimCheckerResult = function (result) {
-    this._result = result;
-    this._error = null;
-    this._summary = null;
-    this._features = {};
+    if ("string" == typeof result) {
+        this._error = result;
+        this._result = { stdout: "", exitCode: 255 };
+    } else {
+        this._result = result;
 
-    if (0 != result.exitCode) {
-        this._error = "command returned " + result.exitCode;
-        return;
+        if (0 != result.exitCode) {
+            this._error = "command returned " + result.exitCode;
+        } else {
+            this._error = null;
+        }
     }
 
-    if (!this._parseOutput()) return;
-
+    this._summary = null;
+    this._features = {};
 };
 const P = VimCheckerResult.prototype = {};
 
@@ -115,15 +119,26 @@ P._parseOutput = function() {
 const VimChecker = {}
 
 VimChecker.check = function (file, callback) {
+    var timeout;
+    var killed = false;
+
     const process = subprocess.call({
         command: file,
         arguments: [ "--version" ],
         workdir: file.parent.path,
         mergeStderr: true,
         done: function (result) {
-            callback.call( null, new VimCheckerResult( result ) );
+            clearTimeout( timeout );
+            callback.call( null, new VimCheckerResult( (killed 
+                    ? "timed out waiting for 'vim --version' to run"
+                    : result ) ) );
         },
     });
+
+    timeout = setTimeout( function() {
+        killed = true;
+        process.kill( true );
+    }, 2 * 1000 );
 }
 
 

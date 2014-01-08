@@ -77,32 +77,43 @@ P._showVimCheck = function (result) {
         element.appendChild( error_box );
     }
 
-    const output_box = document.createElement( 'div' );
-    output_box.style.display = "block";
-    output_box.style.maxWidth = "80ex";
-    output_box.style.whiteSpace = "pre-wrap";
-    output_box.style.fontFamily = "monospace";
-    output_box.style.fontSize = "80%";
-    output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
-    output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
-    output_box.style.padding = "0.5ex";
-    output_box.style.marginTop = "0.25em";
-    element.appendChild( output_box );
+    if (result.output) {
+        const output_box = document.createElement( 'div' );
+        output_box.style.display = "block";
+        output_box.style.maxWidth = "80ex";
+        output_box.style.whiteSpace = "pre-wrap";
+        output_box.style.fontFamily = "monospace";
+        output_box.style.fontSize = "80%";
+        output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
+        output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
+        output_box.style.padding = "0.5ex";
+        output_box.style.marginTop = "0.25em";
+        element.appendChild( output_box );
 
-    output_box.appendChild(
-            document.createTextNode( result.summary ) );
-    
-    const keys = Object.keys( result.features ).sort(
-            function (a, b) { return a.localeCompare( b ) } );
-    for (var idx = 0; idx < keys.length; idx++) {
-        var feature = result.features[ keys[ idx ] ];
+        if (result.summary) {
+            output_box.appendChild(
+                    document.createTextNode( result.summary ) );
+            
+            const keys = Object.keys( result.features ).sort(
+                    function (a, b) { return a.localeCompare( b ) } );
+            for (var idx = 0; idx < keys.length; idx++) {
+                var feature = result.features[ keys[ idx ] ];
 
-        var span = document.createElement( "span" );
-        span.style.display = "inline";
-        span.style.color = (feature.enabled ? "green" : "red");
-        span.textContent = feature.string;
-        output_box.appendChild( span );
-        output_box.appendChild( document.createTextNode( " " ) );
+                var span = document.createElement( "span" );
+                span.style.display = "inline";
+                span.style.color = (feature.enabled ? "green" : "red");
+                span.textContent = feature.string;
+                output_box.appendChild( span );
+                output_box.appendChild(
+                        document.createTextNode( " " ) );
+            }
+        } else {
+            // append at most five lines of the output
+            output_box.appendChild( document.createTextNode(
+                    result.output.substring( 0, 5 * 80 )
+                        .split( /\r?\n/ ).slice( 0, 5 ).join( "\n" )
+                ) );
+        }
     }
 
     this._vim_desc.parentNode.replaceChild( element, this._vim_desc );
