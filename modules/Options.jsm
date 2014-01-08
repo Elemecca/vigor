@@ -7,6 +7,8 @@ const Cu = Components.utils,
       Cc = Components.classes;
 
 Cu.import( "resource://gre/modules/Services.jsm" );
+Cu.import( "resource://gre/modules/FileUtils.jsm" );
+Cu.import( "resource://flatascii/VimChecker.jsm" );
 
 const Options = function (document) {
     Services.console.logStringMessage( "Options()" );
@@ -17,17 +19,23 @@ const Options = function (document) {
     this._vim_button.addEventListener(
             "command", this.chooseVim.bind( this ), false );
 
-    this.doStuff();
+    this._vim_desc.textContent = "";
+    this._vim_desc.style.whiteSpace = "pre";
+    this._vim_desc.style.fontFamily = "monospace";
+
+    this.loadPrefs();
 };
 const P = Options.prototype = {};
 
-P.doStuff = function() {
-    this._vim_path.value = "C:\\Foo\\Bar\\Baz.exe";
+P.loadPrefs = function() {
+    // for now just be lazy
+    this._vim_path.value = "";
     this._vim_button.disabled = false;
-    this._vim_desc.value = "Why hallo thar!\nfoo!";
 };
 
 P.chooseVim = function() {
+    this._vim_button.disabled = true;
+
     if (null == this._vim_picker) {
         this._vim_picker = Cc[ "@mozilla.org/filepicker;1" ]
                 .createInstance( Ci.nsIFilePicker );
@@ -45,8 +53,17 @@ P.chooseVim = function() {
     }).bind( this ) );
 };
 
-P.setVim = function (path) {
-    this._vim_path.value = path;
+P.setVim = function (file) {
+    if ('string' == typeof file)
+        file = new FileUtils.File( file );
+
+    this._vim_path.value = file.path;
+    this._vim_desc.textContent = "Checking...";
+
+    VimChecker.check( file, (function (result) {
+        this._vim_desc.textContent = result.getFullOutput();
+        this._vim_button.disabled = false;
+    }).bind( this ) );
 }
 
 P.destroy = function() {

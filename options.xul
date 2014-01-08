@@ -12,7 +12,7 @@
         <label id="flatascii-vim-path" control="flatascii-vim-choose" value="Loading..." />
         <button id="flatascii-vim-choose" label="Browse..." disabled="true" />
       </hbox>
-      <description id="flatascii-vim-desc" value="Loading..." />
+      <description id="flatascii-vim-desc" />
     </vbox>
   </setting>
 </vbox>
