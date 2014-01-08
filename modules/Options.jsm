@@ -61,10 +61,63 @@ P.setVim = function (file) {
     this._vim_desc.textContent = "Checking...";
 
     VimChecker.check( file, (function (result) {
-        result.buildOutput( this._vim_desc );
+        this._showVimCheck( result );
         this._vim_button.disabled = false;
     }).bind( this ) );
-}
+};
+
+P._showVimCheck = function (result) {
+    const element  = this._vim_desc.cloneNode( false );
+    const document = element.ownerDocument;
+
+    if (result.error) {
+        const error_box = document.createElement( 'div' );
+        error_box.style.display = "block";
+        error_box.style.border = "2px solid rgba( 255, 0, 0, 0.8 )";
+        error_box.style.background = "rgba( 255, 0, 0, 0.25 )";
+        error_box.style.padding = "0.5ex";
+        error_box.style.marginBottom = "0.5em";
+        error_box.textContent = result.error;
+        element.appendChild( error_box );
+    }
+
+    const output_box = document.createElement( 'div' );
+    output_box.style.display = "block";
+    output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
+    output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
+    output_box.style.padding = "0.5ex";
+    output_box.style.fontSize = "80%";
+    element.appendChild( output_box );
+    
+    const summary_box = document.createElement( 'div' );
+    summary_box.style.display = "block";
+    summary_box.style.whiteSpace = "pre";
+    summary_box.textContent = result.summary;
+    output_box.appendChild( summary_box );
+
+    const feat_box = document.createElement( 'div' );
+    feat_box.style.display = "block";
+    feat_box.style.whiteSpace = "normal";
+    feat_box.style.maxWidth = "80ex";
+    output_box.appendChild( feat_box );
+    
+    const keys = Object.keys( result.features ).sort(
+            function (a, b) { return a.localeCompare( b ) } );
+    for (var idx = 0; idx < keys.length; idx++) {
+        var feature = result.features[ keys[ idx ] ];
+
+        var span = document.createElement( "span" );
+        span.style.display = "inline";
+        span.style.color = (feature.enabled ? "green" : "red");
+        span.textContent = feature.string;
+        feat_box.appendChild( span );
+        feat_box.appendChild( document.createTextNode( " " ) );
+    }
+
+    this._vim_desc.parentNode.replaceChild( element, this._vim_desc );
+    this._vim_desc = element;
+};
+
 
 P.destroy = function() {
     // make sure we forget all DOM nodes to prevent leaks

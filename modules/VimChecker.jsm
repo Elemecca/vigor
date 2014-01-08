@@ -9,6 +9,7 @@ Cu.import( "resource://flatascii/lib/subprocess.jsm" );
 
 const VimCheckerResult = function (result) {
     this._result = result;
+    this._error = null;
     this._summary = null;
     this._features = {};
 
@@ -19,27 +20,61 @@ const VimCheckerResult = function (result) {
 
     if (!this._parseOutput()) return;
 
-    if (!(this._features[ "netbeans_intg" ] || {}).enabled) {
-        this._error = "NetBeans integration protocol is not supported";
-        return;
-    }
 };
 const P = VimCheckerResult.prototype = {};
 
-P.getFullOutput = function() {
-    return this._result.stdout || "";
-}
+Object.defineProperty( P, 'exitCode', {
+    get: function() {
+        return this._result.exitCode;
+    },
+});
+
+Object.defineProperty( P, 'output', {
+    get: function() {
+        return this._result.stdout;
+    },
+});
+
+Object.defineProperty( P, 'error', {
+    get: function() {
+        this._parseOutput();
+        return this._error;
+    },
+});
+
+Object.defineProperty( P, 'ok', {
+    get: function() {
+        return !this.error;
+    },
+});
+
+Object.defineProperty( P, 'summary', {
+    get: function() {
+        this._parseOutput();
+        return this._summary;
+    },
+});
+
+Object.defineProperty( P, 'features', {
+    get: function() {
+        this._parseOutput();
+        return this._features;
+    },
+});
 
 P._parseOutput = function() {
+    if (this._parsed || this._error) return;
+    this._parsed = true;
+
     const raw = this._result.stdout;
     if ("string" != typeof raw || "" === raw) {
         this._error = "command produced no output";
-        return false;
+        return;
     }
 
     if (!raw.startsWith( "VIM" )) {
         this._error = "output doesn't look like a 'vim --version' response";
-        return false;
+        return;
     }
 
     const lines = raw.split( /\r?\n/ );
@@ -72,67 +107,10 @@ P._parseOutput = function() {
         }
     }
 
-    return true;
+    if (!(this._features[ "netbeans_intg" ] || {}).enabled) {
+        this._error = "NetBeans integration protocol is not supported";
+    }
 }
-
-Object.defineProperty( P, 'ok', {
-    get: function() {
-        return ('undefined' == typeof this._error);
-    },
-});
-
-P.buildOutput = function (parent) {
-    const document = parent.ownerDocument;
-    const fragment = document.createDocumentFragment();
-
-    if (!this.ok) {
-        const error_box = document.createElement( 'div' );
-        error_box.style.display = "block";
-        error_box.style.border = "2px solid rgba( 255, 0, 0, 0.8 )";
-        error_box.style.background = "rgba( 255, 0, 0, 0.25 )";
-        error_box.style.padding = "0.5ex";
-        error_box.style.marginBottom = "0.5em";
-        error_box.textContent = this._error;
-        fragment.appendChild( error_box );
-    }
-
-    const output_box = document.createElement( 'div' );
-    output_box.style.display = "block";
-    output_box.style.border = "1px solid rgba( 0, 0, 0, 0.2 )";
-    output_box.style.background = "rgba( 0, 0, 0, 0.1 )";
-    output_box.style.padding = "0.5ex";
-    output_box.style.fontSize = "80%";
-    fragment.appendChild( output_box );
-    
-    const summary_box = document.createElement( 'div' );
-    summary_box.style.display = "block";
-    summary_box.style.whiteSpace = "pre";
-    summary_box.textContent = this._summary;
-    output_box.appendChild( summary_box );
-
-    const feat_box = document.createElement( 'div' );
-    feat_box.style.display = "block";
-    feat_box.style.whiteSpace = "normal";
-    feat_box.style.maxWidth = "80ex";
-    output_box.appendChild( feat_box );
-    
-    const keys = Object.keys( this._features ).sort( function (a, b) {
-        return a.localeCompare( b )
-    } );
-    for (var idx = 0; idx < keys.length; idx++) {
-        var feature = this._features[ keys[ idx ] ];
-
-        var span = document.createElement( "span" );
-        span.style.display = "inline";
-        span.style.color = (feature.enabled ? "green" : "red");
-        span.textContent = feature.string;
-        feat_box.appendChild( span );
-        feat_box.appendChild( document.createTextNode( " " ) );
-    }
-
-    parent.textContent = "";
-    parent.appendChild( fragment );
-};
 
 const VimChecker = {}
 
