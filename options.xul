@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   -->
+
+<vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <setting type="control" title="Vim Executable">
+    The command-line Vim executable to be used.
+    <vbox>
+      <hbox>
+        <label id="flatascii-vim-path" control="flatascii-vim-choose" value="Loading..." />
+        <button id="flatascii-vim-choose" label="Browse..." disabled="true" />
+      </hbox>
+      <description id="flatascii-vim-desc" value="Loading..." />
+    </vbox>
+  </setting>
+</vbox>

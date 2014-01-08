@@ -1,5 +1,11 @@
 
-content flatascii chrome/content/
+content  flatascii chrome/content/
+resource flatascii modules/
+
+# application startup listener
+component {9d4377b9-5710-4b43-8d24-74e87f5140bb} components/Bootstrap.js
+contract @flatascii.maltera.com/bootstrap;1 {9d4377b9-5710-4b43-8d24-74e87f5140bb}
+category profile-after-change flatascii @flatascii.maltera.com/bootstrap;1
 
 # replace the default nsIMsgComposeService implementation with our own
 # this lets us divert plaintext messages to our new compose window
