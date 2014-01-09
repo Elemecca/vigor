@@ -6,6 +6,7 @@ const Cu = Components.utils,
       Ci = Components.interfaces;
 
 Cu.import( "resource://gre/modules/Timer.jsm" );
+Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://flatascii/lib/subprocess.jsm" );
 
 const VimCheckerResult = function (result) {
@@ -118,7 +119,7 @@ P._parseOutput = function() {
 
 const VimChecker = {}
 
-VimChecker.check = function (file, callback) {
+function checkProcess (file, callback) {
     var timeout;
     var killed = false;
 
@@ -139,6 +140,27 @@ VimChecker.check = function (file, callback) {
         killed = true;
         process.kill( true );
     }, 2 * 1000 );
+}
+
+function checkHeader (file, callback) {
+    Cu.import( "resource://flatascii/WindowsPEHeader.jsm" );
+    const header = new WindowsPEHeader( file );
+    header.read( function() {
+        if (!header.error && header.isGUI) {
+            callback.call( null, new VimCheckerResult(
+                "file is a Windows GUI application" ) );
+        } else {
+            checkProcess( file, callback );
+        }
+    });
+}
+
+VimChecker.check = function (file, callback) {
+    if ("WINNT" == Services.appinfo.OS) {
+        checkHeader( file, callback );
+    } else {
+        checkProcess( file, callback );
+    }
 }
 
 
