@@ -184,6 +184,13 @@ P.read = function (callback) {
         const ushort = new Uint16Array( reader.result );
         const ulong  = new Uint32Array( reader.result );
 
+        function udlong (base) {
+            return Object.freeze({
+                low:    ulong[ base++ ],
+                high:   ulong[ base++ ],
+            });
+        }
+
         Object.defineProperty( this, "nt", {
             enumerable: true,
             value: {
@@ -237,13 +244,6 @@ P.read = function (callback) {
                 numberOfRvaAndSizes:            ulong[ 29 ],
             });
         } else if (C.IMAGE_NT_OPTIONAL_HDR64_MAGIC == ushort[ 12 ]) {
-            function udlong (base) {
-                return Object.freeze({
-                    low:    ulong[ base++ ],
-                    high:   ulong[ base++ ],
-                });
-            }
-
             this.nt.optional = Object.freeze({
                 magic:                          ushort[ 12 ],
                 majorLinkerVersion:             uchar[ 26 ],
