@@ -13,7 +13,6 @@ Cu.import( "resource://gre/modules/FileUtils.jsm" );
 Cu.import( "resource://vigor/VimChecker.jsm" );
 
 const Options = function (document) {
-    Services.console.logStringMessage( "Options()" );
     this._vim_path   = document.getElementById( "vigor-vim-path" );
     this._vim_button = document.getElementById( "vigor-vim-choose" );
     this._vim_desc   = document.getElementById( "vigor-vim-desc" );
@@ -142,6 +141,11 @@ P.destroy = function() {
 Options.register = function() {
     Services.obs.addObserver( Options.handler, "addon-options-displayed", false );
     Services.obs.addObserver( Options.handler, "addon-options-hidden", false );
+};
+
+Options.unregister = function() {
+    Services.obs.removeObserver( Options.handler, "addon-options-displayed" );
+    Services.obs.removeObserver( Options.handler, "addon-options-hidden" );
 };
 
 Options.handler = function (subject, topic, data) {

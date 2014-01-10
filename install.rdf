@@ -4,27 +4,22 @@
   <rdf:Description about="urn:mozilla:install-manifest">
     <id>vigor@maltera.com</id>
     <name>Vigor</name>
-    <description>Replaces the compose window with Vim.</description>
     <version>0.1</version>
 
+    <description>Integrates the Vim editor.</description>
     <creator>Sam Hanes</creator>
 
-    <!-- We erect here eldritch devices wrought of XPCOM and depravity.
-       - They are necessarily fragile, and must be carefully examined
-       - in the light of every new environment lest their horrors be 
-       - unleashed to fall tumultuous upon our unsuspecting users. -->
-    <strictCompatibility>true</strictCompatibility>
+    <type>2</type>
+    <bootstrap>true</bootstrap>
 
     <targetApplication>
       <rdf:Description>
-        <!-- Mozilla Thunderbird -->
-        <id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</id>
-        <minVersion>24.0</minVersion>
+        <!-- Mozilla Firefox -->
+        <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
+        <minVersion>27.0b1</minVersion>
         <maxVersion>27.*</maxVersion>
       </rdf:Description>
     </targetApplication>
-
-    <targetPlatform>WINNT</targetPlatform>
   </rdf:Description>
 </rdf:RDF>
 <!-- vim: se ft=xml sts=2 sw=2 et :miv -->
