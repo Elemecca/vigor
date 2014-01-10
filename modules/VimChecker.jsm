@@ -113,7 +113,14 @@ P._parseOutput = function() {
     }
 
     if (!(this._features[ "netbeans_intg" ] || {}).enabled) {
-        this._error = "NetBeans integration protocol is not supported";
+        this._error = "The NetBeans protocol is not supported.";
+
+        if (/MS-Windows .* console version/i.test( this._summary )) {
+            this._error += "\n\nUnfortunately the official Vim"
+                + " binary for Windows doesn't support the control"
+                + " protocol we use. We recommend using the version of"
+                + " Vim distributed by the Cygwin project.";
+        }
     }
 }
 
@@ -149,7 +156,13 @@ function checkHeader (file, callback) {
         if (!header.error && header.nt.optional.subsystem
                 == WindowsPEHeader.IMAGE_SUBSYSTEM_WINDOWS_GUI) {
             callback.call( null, new VimCheckerResult(
-                "file is a Windows GUI application" ) );
+                "That file is a Windows GUI application.\n\n"
+                + "Unfortunately we can't use gVim binaries on Windows"
+                + " because they don't support console I/O, and the"
+                + " official command-line binary doesn't support the"
+                + " control protocol we use. We recommend using the"
+                + " version of Vim distributed by the Cygwin project."
+                ) );
         } else {
             checkProcess( file, callback );
         }
@@ -157,6 +170,9 @@ function checkHeader (file, callback) {
 }
 
 VimChecker.check = function (file, callback) {
+    // on Windows we don't want to call gVim because it'll open a
+    // MessageBox, so we have to check the EXE file header first
+    // to detect GUI applications
     if ("WINNT" == Services.appinfo.OS) {
         checkHeader( file, callback );
     } else {

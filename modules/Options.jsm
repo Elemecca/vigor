@@ -16,6 +16,9 @@ const Options = function (document) {
     this._vim_button = document.getElementById( "flatascii-vim-choose" );
     this._vim_desc   = document.getElementById( "flatascii-vim-desc" );
 
+    this._vim_path.style.fontFamily = "monospace";
+    this._vim_path.style.whiteSpace = "pre";
+
     this._vim_button.addEventListener(
             "command", this.chooseVim.bind( this ), false );
 
@@ -40,12 +43,15 @@ P.chooseVim = function() {
                 "Choose Vim Executable",
                 Ci.nsIFilePicker.modeOpen );
         this._vim_picker.appendFilters( Ci.nsIFilePicker.filterApps );
+        this._vim_picker.appendFilters( Ci.nsIFilePicker.filterAll );
     }
 
     this._vim_picker.open( (function (result) {
-        if (Ci.nsIFilePicker.returnOK != result) return;
-
-        this.setVim( this._vim_picker.file.path );
+        if (Ci.nsIFilePicker.returnOK == result) { 
+            this.setVim( this._vim_picker.file.path );
+        } else {
+            this._vim_button.disabled = false;
+        }
     }).bind( this ) );
 };
 
@@ -69,6 +75,8 @@ P._showVimCheck = function (result) {
     if (result.error) {
         const error_box = document.createElement( 'div' );
         error_box.style.display = "block";
+        error_box.style.maxWidth = "80ex";
+        error_box.style.whiteSpace = "pre-line";
         error_box.style.border = "2px solid rgba( 255, 0, 0, 0.8 )";
         error_box.style.background = "rgba( 255, 0, 0, 0.25 )";
         error_box.style.padding = "0.5ex";
