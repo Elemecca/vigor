@@ -10,13 +10,13 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
-Cu.import( "resource://flatascii/VimChecker.jsm" );
+Cu.import( "resource://vigor/VimChecker.jsm" );
 
 const Options = function (document) {
     Services.console.logStringMessage( "Options()" );
-    this._vim_path   = document.getElementById( "flatascii-vim-path" );
-    this._vim_button = document.getElementById( "flatascii-vim-choose" );
-    this._vim_desc   = document.getElementById( "flatascii-vim-desc" );
+    this._vim_path   = document.getElementById( "vigor-vim-path" );
+    this._vim_button = document.getElementById( "vigor-vim-choose" );
+    this._vim_desc   = document.getElementById( "vigor-vim-desc" );
 
     this._vim_path.style.fontFamily = "monospace";
     this._vim_path.style.whiteSpace = "pre";
@@ -145,7 +145,7 @@ Options.register = function() {
 };
 
 Options.handler = function (subject, topic, data) {
-    if ("flatascii@maltera.com" !== data) return;
+    if ("vigor@maltera.com" !== data) return;
     if ("addon-options-displayed" === topic) {
         Options.instance = new Options( subject );
     } else if ("addon-options-hidden" === topic) {

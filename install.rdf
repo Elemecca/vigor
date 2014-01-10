@@ -2,8 +2,8 @@
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns="http://www.mozilla.org/2004/em-rdf#">
   <rdf:Description about="urn:mozilla:install-manifest">
-    <id>flatascii@maltera.com</id>
-    <name>FlatASCII</name>
+    <id>vigor@maltera.com</id>
+    <name>Vigor</name>
     <description>Replaces the compose window with Vim.</description>
     <version>0.1</version>
 

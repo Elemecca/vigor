@@ -9,7 +9,7 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Timer.jsm" );
 Cu.import( "resource://gre/modules/Services.jsm" );
-Cu.import( "resource://flatascii/lib/subprocess.jsm" );
+Cu.import( "resource://vigor/lib/subprocess.jsm" );
 
 const VimCheckerResult = function (result) {
     if ("string" == typeof result) {
@@ -152,7 +152,7 @@ function checkProcess (file, callback) {
 }
 
 function checkHeader (file, callback) {
-    Cu.import( "resource://flatascii/WindowsPEHeader.jsm" );
+    Cu.import( "resource://vigor/WindowsPEHeader.jsm" );
     const header = new WindowsPEHeader( file );
     header.read( function() {
         if (!header.error && header.nt.optional.subsystem

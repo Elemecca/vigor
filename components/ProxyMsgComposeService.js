@@ -15,7 +15,7 @@ const Log = Cc[ "@mozilla.org/consoleservice;1" ]
 Log.logStringMessage( "ProxyMsgComposeService loaded" );
 
 
-const OUR_NEW_CHROME = "chrome://flatascii/content/compose.xul";
+const OUR_NEW_CHROME = "chrome://vigor/content/compose.xul";
 const DEFAULT_CHROME = "chrome://messenger/content/messengercompose/messengercompose.xul";
 
 function ProxyMsgComposeService() {

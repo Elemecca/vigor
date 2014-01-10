@@ -21,7 +21,7 @@
   %viewZoomOverlayDTD;
 ]>
 
-<window id="flatascii-compose-window"
+<window id="vigor-compose-window"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         title="&msgComposeWindow.title;"
         windowtype="msgcompose"

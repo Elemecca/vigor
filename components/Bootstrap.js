@@ -17,7 +17,7 @@ Bootstrap.prototype = {
         ]),
 
     observe: function (subject, topic, data) {
-        Cu.import( "resource://flatascii/Options.jsm" );
+        Cu.import( "resource://vigor/Options.jsm" );
         Options.register();
     },
 };
