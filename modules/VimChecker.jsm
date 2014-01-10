@@ -146,7 +146,8 @@ function checkHeader (file, callback) {
     Cu.import( "resource://flatascii/WindowsPEHeader.jsm" );
     const header = new WindowsPEHeader( file );
     header.read( function() {
-        if (!header.error && header.isGUI) {
+        if (!header.error && header.nt.optional.subsystem
+                == WindowsPEHeader.IMAGE_SUBSYSTEM_WINDOWS_GUI) {
             callback.call( null, new VimCheckerResult(
                 "file is a Windows GUI application" ) );
         } else {
