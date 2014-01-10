@@ -8,6 +8,8 @@
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms680313%28v=vs.85%29.aspx
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms680339%28v=vs.85%29.aspx
 
+"use strict";
+
 const Cu = Components.utils,
       Ci = Components.interfaces,
       Cc = Components.classes;
