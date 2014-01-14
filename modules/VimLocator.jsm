@@ -60,6 +60,60 @@ providers.push( function (item, done) {
     })();
 });
 
+// look for Cygwin installations
+if (isWindows) providers.push( function (item, done) {
+    const entries = (function() {
+        const key = Cc[ "@mozilla.org/windows-registry-key;1" ]
+                .createInstance( Ci.nsIWindowsRegKey );
+
+        try {
+            key.open(
+                    Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
+                    "SOFTWARE\\Cygwin\\Installations",
+                    Ci.nsIWindowsRegKey.ACCESS_READ
+                );
+        } catch (caught) {
+            // the key doesn't exist
+            return;
+        }
+
+        for (let idx = 0; idx < key.valueCount; idx++) {
+            let value = key.readStringValue( key.getValueName( idx ) );
+            if (value.startsWith( "\\??\\" ))
+                value = value.substring( 4 );
+
+            try {
+                let file = new FileUtils.File( value );
+                if (!file.exists() || !file.isDirectory()) continue;
+
+                file.append( "bin" );
+                file.append( "vim.exe" );
+                if (file.exists())
+                    yield file;
+            } catch (caught) {
+                // the file path is invalid
+            }
+        }
+    })();
+
+    (function checkNext() {
+        try {
+            item.call( null, entries.next(), checkNext );
+        } catch (caught) {
+            try {
+                if (caught instanceof StopIteration) {
+                    done.call( null );
+                } else {
+                    Cu.reportError( caught );
+                    checkNext();
+                }
+            } catch (caught) {
+                Cu.reportError( caught );
+            }
+        }
+    })();
+});
+
 const VimLocator = {
     search: function (callback) {
         let best = null;
