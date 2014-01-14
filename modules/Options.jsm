@@ -63,6 +63,7 @@ P.setVim = function (file) {
     this._vim_desc.textContent = "Checking...";
 
     VimChecker.check( file, (function (result) {
+        VimLocator.setLocation( result );
         this._showVimCheck( result );
         this._vim_button.disabled = false;
     }).bind( this ) );

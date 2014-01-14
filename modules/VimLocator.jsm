@@ -10,8 +10,11 @@ const Cu = Components.utils,
       Ci = Components.interfaces,
       Cc = Components.classes;
 
+Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
 Cu.import( "resource://vigor/VimChecker.jsm" );
+
+const PREF_KEY = "extensions.vigor.vimExecutable";
 
 const providers = [];
 
@@ -52,7 +55,7 @@ providers.push( function (item, done) {
 });
 
 const VimLocator = {
-    locate: function (callback) {
+    search: function (callback) {
         function check (file, nope) {
             VimChecker.check( file, function (result) {
                 try {
@@ -86,4 +89,55 @@ const VimLocator = {
             }
         })();
     },
+
+    locate: function (callback) {
+        debugger;
+
+        var found = (function (result) {
+            try {
+                Services.prefs.getDefaultBranch( null )
+                    .setComplexValue(
+                            PREF_KEY, Ci.nsIFile, result.file );
+                callback.call( null, result );
+            } catch (caught) {
+                Cu.reportError( caught );
+            }
+        }).bind( this );
+
+        if (this._cache)
+            found( this._cache );
+
+        try {
+            const pref = Services.prefs.getComplexValue(
+                                        PREF_KEY, Ci.nsIFile );
+            VimChecker.check( pref, function (prefResult) {
+                if (prefResult.ok) {
+                    found( prefResult );
+                } else {
+                    this.search( function (searchResult) {
+                        if (searchResult && searchResult.ok) {
+                            found( searchResult );
+                        } else {
+                            found( prefResult );
+                        }
+                    });
+                }
+            });
+        } catch (caught) {
+            // the pref probably doesn't exist
+        }
+
+        this.search( found );
+    },
+
+    setLocation: function (result) {
+        if (result === this._cache) return;
+        if (!( result instanceof VimCheckerResult ))
+            throw new TypeError(
+                    "argument must be a VimCheckerResult" );
+
+        this._cache = result;
+        Services.prefs.setComplexValue(
+                PREF_KEY, Ci.nsIFile, result.file );
+    }
 };

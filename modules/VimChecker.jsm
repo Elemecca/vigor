@@ -4,6 +4,8 @@
 
 "use strict";
 
+const EXPORTED_SYMBOLS = [ "VimChecker", "VimCheckerResult" ];
+
 const Cu = Components.utils,
       Ci = Components.interfaces;
 
@@ -189,6 +191,3 @@ VimChecker.check = function (file, callback) {
         checkProcess( file, callback );
     }
 }
-
-
-const EXPORTED_SYMBOLS = [ "VimChecker" ];
