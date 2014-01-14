@@ -11,7 +11,9 @@ Cu.import( "resource://gre/modules/Timer.jsm" );
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://vigor/lib/subprocess.jsm" );
 
-const VimCheckerResult = function (result) {
+const VimCheckerResult = function (file, result) {
+    this._file = file;
+
     if ("string" == typeof result) {
         this._error = result;
         this._result = { stdout: "", exitCode: 255 };
@@ -29,6 +31,12 @@ const VimCheckerResult = function (result) {
     this._features = {};
 };
 const P = VimCheckerResult.prototype = {};
+
+Object.defineProperty( P, 'file', {
+    get: function() {
+        return this._file;
+    },
+});
 
 Object.defineProperty( P, 'exitCode', {
     get: function() {
@@ -139,7 +147,7 @@ function checkProcess (file, callback) {
         mergeStderr: true,
         done: function (result) {
             clearTimeout( timeout );
-            callback.call( null, new VimCheckerResult( (killed 
+            callback.call( null, new VimCheckerResult( file, (killed 
                     ? "timed out waiting for 'vim --version' to run"
                     : result ) ) );
         },
@@ -157,7 +165,7 @@ function checkHeader (file, callback) {
     header.read( function() {
         if (!header.error && header.nt.optional.subsystem
                 == WindowsPEHeader.IMAGE_SUBSYSTEM_WINDOWS_GUI) {
-            callback.call( null, new VimCheckerResult(
+            callback.call( null, new VimCheckerResult( file,
                 "That file is a Windows GUI application.\n\n"
                 + "Unfortunately we can't use gVim binaries on Windows"
                 + " because they don't support console I/O, and the"

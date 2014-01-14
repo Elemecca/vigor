@@ -11,6 +11,7 @@ const Cu = Components.utils,
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
 Cu.import( "resource://vigor/VimChecker.jsm" );
+Cu.import( "resource://vigor/VimLocator.jsm" );
 
 const Options = function (document) {
     this._vim_path   = document.getElementById( "vigor-vim-path" );
@@ -28,9 +29,7 @@ const Options = function (document) {
 const P = Options.prototype = {};
 
 P.loadPrefs = function() {
-    // for now just be lazy
-    this._vim_path.value = "";
-    this._vim_button.disabled = false;
+    VimLocator.locate( this._setVim.bind( this ) );
 };
 
 P.chooseVim = function() {
@@ -69,6 +68,16 @@ P.setVim = function (file) {
     }).bind( this ) );
 };
 
+P._setVim = function (result) {
+    if (result) {
+        this._vim_path.value = result.file.path;
+        this._showVimCheck( result );
+    } else {
+        this._vim_path.value = "";
+    }
+    this._vim_button.disabled = false;
+};
+
 P._showVimCheck = function (result) {
     const element  = this._vim_desc.cloneNode( false );
     const document = element.ownerDocument;
@@ -89,7 +98,7 @@ P._showVimCheck = function (result) {
     if (result.output) {
         const output_box = document.createElement( 'div' );
         output_box.style.display = "block";
-        output_box.style.maxWidth = "80ex";
+        output_box.style.maxWidth = "90ex";
         output_box.style.whiteSpace = "pre-wrap";
         output_box.style.fontFamily = "monospace";
         output_box.style.fontSize = "80%";
