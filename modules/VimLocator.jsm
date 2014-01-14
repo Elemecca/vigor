@@ -19,99 +19,85 @@ const isWindows = ("WINNT" == Services.appinfo.OS);
 
 const providers = [];
 
-// search the platform executable search path
-providers.push( function (item, done) {
-    const entries = (function() {
-        const env = Cc[ "@mozilla.org/process/environment;1" ]
-                .getService( Ci.nsIEnvironment );
-        for (let dirPath of 
-                env.get( "PATH" ).split( isWindows ? ';' : ':' )) {
-            let dir = null;
+function addIteratorProvider (entries) {
+    providers.push( function (item, done) {
+        if ("function" == typeof entries)
+            entries = entries.call( null );
+
+        (function checkNext() {
             try {
-                dir = new FileUtils.File( dirPath );
-            } catch (caught) { continue; }
-
-            if (!dir.exists() || !dir.isDirectory()) continue;
-
-            for (let candidate of [ "vim", "vim.exe" ]) {
-                let file = dir.clone();
-                file.append( candidate );
-                if (file.exists())
-                    yield file;
-            }
-        }
-    })();
-
-    (function checkNext() {
-        try {
-            item.call( null, entries.next(), checkNext );
-        } catch (caught) {
-            try {
-                if (caught instanceof StopIteration) {
-                    done.call( null );
-                } else {
-                    Cu.reportError( caught );
-                    checkNext();
-                }
+                item.call( null, entries.next(), checkNext );
             } catch (caught) {
-                Cu.reportError( caught );
+                try {
+                    if (caught instanceof StopIteration) {
+                        done.call( null );
+                    } else {
+                        Cu.reportError( caught );
+                        checkNext();
+                    }
+                } catch (caught) {
+                    Cu.reportError( caught );
+                }
             }
+        })();
+    });
+}
+
+// search the platform executable search path
+addIteratorProvider( function() {
+    const env = Cc[ "@mozilla.org/process/environment;1" ]
+            .getService( Ci.nsIEnvironment );
+    for (let dirPath of 
+            env.get( "PATH" ).split( isWindows ? ';' : ':' )) {
+        let dir = null;
+        try {
+            dir = new FileUtils.File( dirPath );
+        } catch (caught) { continue; }
+
+        if (!dir.exists() || !dir.isDirectory()) continue;
+
+        for (let candidate of [ "vim", "vim.exe" ]) {
+            let file = dir.clone();
+            file.append( candidate );
+            if (file.exists())
+                yield file;
         }
-    })();
+    }
 });
 
 // look for Cygwin installations
-if (isWindows) providers.push( function (item, done) {
-    const entries = (function() {
-        const key = Cc[ "@mozilla.org/windows-registry-key;1" ]
-                .createInstance( Ci.nsIWindowsRegKey );
+if (isWindows) addIteratorProvider( function() {
+    const key = Cc[ "@mozilla.org/windows-registry-key;1" ]
+            .createInstance( Ci.nsIWindowsRegKey );
+
+    try {
+        key.open(
+                Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
+                "SOFTWARE\\Cygwin\\Installations",
+                Ci.nsIWindowsRegKey.ACCESS_READ
+            );
+    } catch (caught) {
+        // the key doesn't exist
+        return;
+    }
+
+    for (let idx = 0; idx < key.valueCount; idx++) {
+        let value = key.readStringValue( key.getValueName( idx ) );
+        if (value.startsWith( "\\??\\" ))
+            value = value.substring( 4 );
 
         try {
-            key.open(
-                    Ci.nsIWindowsRegKey.ROOT_KEY_LOCAL_MACHINE,
-                    "SOFTWARE\\Cygwin\\Installations",
-                    Ci.nsIWindowsRegKey.ACCESS_READ
-                );
+            let file = new FileUtils.File( value );
+            if (!file.exists() || !file.isDirectory()) continue;
+
+            file.append( "bin" );
+            file.append( "vim.exe" );
+            if (file.exists())
+                yield file;
         } catch (caught) {
-            // the key doesn't exist
-            return;
+            // the file path is invalid
         }
-
-        for (let idx = 0; idx < key.valueCount; idx++) {
-            let value = key.readStringValue( key.getValueName( idx ) );
-            if (value.startsWith( "\\??\\" ))
-                value = value.substring( 4 );
-
-            try {
-                let file = new FileUtils.File( value );
-                if (!file.exists() || !file.isDirectory()) continue;
-
-                file.append( "bin" );
-                file.append( "vim.exe" );
-                if (file.exists())
-                    yield file;
-            } catch (caught) {
-                // the file path is invalid
-            }
-        }
-    })();
-
-    (function checkNext() {
-        try {
-            item.call( null, entries.next(), checkNext );
-        } catch (caught) {
-            try {
-                if (caught instanceof StopIteration) {
-                    done.call( null );
-                } else {
-                    Cu.reportError( caught );
-                    checkNext();
-                }
-            } catch (caught) {
-                Cu.reportError( caught );
-            }
-        }
-    })();
+    }
 });
 
 const VimLocator = {
