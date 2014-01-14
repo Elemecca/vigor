@@ -15,6 +15,7 @@ Cu.import( "resource://gre/modules/FileUtils.jsm" );
 Cu.import( "resource://vigor/VimChecker.jsm" );
 
 const PREF_KEY = "extensions.vigor.vimExecutable";
+const isWindows = ("WINNT" == Services.appinfo.OS);
 
 const providers = [];
 
@@ -23,8 +24,13 @@ providers.push( function (item, done) {
     const entries = (function() {
         const env = Cc[ "@mozilla.org/process/environment;1" ]
                 .getService( Ci.nsIEnvironment );
-        for (let dirPath of env.get( "PATH" ).split( /[:;]/ )) {
-            let dir = new FileUtils.File( dirPath );
+        for (let dirPath of 
+                env.get( "PATH" ).split( isWindows ? ';' : ':' )) {
+            let dir = null;
+            try {
+                dir = new FileUtils.File( dirPath );
+            } catch (caught) { continue; }
+
             if (!dir.exists() || !dir.isDirectory()) continue;
 
             for (let candidate of [ "vim", "vim.exe" ]) {
@@ -56,12 +62,14 @@ providers.push( function (item, done) {
 
 const VimLocator = {
     search: function (callback) {
+        let best = null;
         function check (file, nope) {
             VimChecker.check( file, function (result) {
                 try {
                     if (result.ok) {
                         callback.call( null, result );
                     } else {
+                        best = result;
                         nope.call( null );
                     }
                 } catch (caught) {
@@ -74,11 +82,11 @@ const VimLocator = {
         (function nextProvider() {
             try {
                 const prov = provIter.next()[ 1 ];
-                prov.call( null, check, nextProvider );
+                prov.call( null, check, nextProvider.bind( this ) );
             } catch (caught) {
                 try {
                     if (caught instanceof StopIteration) {
-                        callback.call( null, null );
+                        callback.call( null, best );
                     } else {
                         Cu.reportError( caught );
                         nextProvider();
@@ -91,13 +99,14 @@ const VimLocator = {
     },
 
     locate: function (callback) {
-        debugger;
-
         var found = (function (result) {
             try {
-                Services.prefs.getDefaultBranch( null )
-                    .setComplexValue(
-                            PREF_KEY, Ci.nsIFile, result.file );
+                if (result) {
+                    Services.prefs.getDefaultBranch( null )
+                        .setComplexValue(
+                                PREF_KEY, Ci.nsIFile, result.file );
+                }
+
                 callback.call( null, result );
             } catch (caught) {
                 Cu.reportError( caught );

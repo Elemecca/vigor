@@ -58,6 +58,13 @@ P.chooseVim = function() {
 P.setVim = function (file) {
     if ('string' == typeof file)
         file = new FileUtils.File( file );
+    else if (!file) {
+        this._vim_path.value = "";
+        this._vim_desc.textContent = "";
+        this._vim_button.disabled = false;
+        return;
+    }
+        
 
     this._vim_path.value = file.path;
     this._vim_desc.textContent = "Checking...";
