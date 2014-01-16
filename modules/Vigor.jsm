@@ -17,6 +17,10 @@ const VIGOR_SCRIPTS = [
     "resource://vigor/lib/term.js",
 ];
 
+const VIGOR_STYLES = [
+    "resource://vigor/impl/terminal.css",
+];
+
 const Vigor = function Vigor() {
 
 };
@@ -31,6 +35,13 @@ P.appendTo = function (parentElement) {
     this._iframe.setAttribute( 'src',
             'data:text/html;charset=utf8,<!DOCTYPE html>'
             + '<html dir="ltr">'
+            + '  <head>'
+            + [ '<script type="application/javascript" src="'
+                    + url + '"></script>' 
+                    for (url of VIGOR_SCRIPTS) ].join( "\n" )
+            + [ '<link rel="stylesheet" type="text/css" href="'
+                    + url + '" />'
+                    for (url of VIGOR_STYLES) ].join( "\n" )
             + '  <body></body>'
             + '</html>'
         );
@@ -41,10 +52,8 @@ P.appendTo = function (parentElement) {
         const window   = this._iframe.contentWindow.wrappedJSObject;
         const document = window.document;
 
-        for (let url of VIGOR_SCRIPTS)
-            Services.scriptloader.loadSubScript( url, window, "utf8" );
-        
-        this._term = new window.Terminal();
+        this._term = new window.Terminal({
+            });
         this._term.on( 'data', (function onData (data) {
             this._term.write( data );
         }).bind( this ) );

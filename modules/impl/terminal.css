@@ -1,0 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+html {
+    font-family: "Consolas", "Menlo", "Ubuntu Mono",
+        "DejaVu Sans Mono", "Liberation Mono", monospace;
+    font-size: 10pt;
+
+    color: #f0f0f0;
+    background: #000000;
+}
+
+body {
+    margin: 0;
+    padding: 0.5ex;
+}
+
+.terminal-cursor {
+    color: #000000;
+    background: #f0f0f0;
+}
