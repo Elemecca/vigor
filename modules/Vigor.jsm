@@ -8,9 +8,14 @@ const Cu = Components.utils,
       Ci = Components.interfaces,
       Cc = Components.classes;
 
+Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/Promise.jsm" );
 
 const EXPORTED_SYMBOLS = [ "Vigor" ];
+
+const VIGOR_SCRIPTS = [
+    "resource://vigor/lib/term.js",
+];
 
 const Vigor = function Vigor() {
 
@@ -36,13 +41,33 @@ P.appendTo = function (parentElement) {
         const window   = this._iframe.contentWindow.wrappedJSObject;
         const document = window.document;
 
-        document.body.appendChild(
-            document.createTextNode( "Hi there!" ) );
+        for (let url of VIGOR_SCRIPTS)
+            Services.scriptloader.loadSubScript( url, window, "utf8" );
         
-        defer.resolve();
+        this._term = new window.Terminal();
+        this._term.on( 'data', (function onData (data) {
+            this._term.write( data );
+        }).bind( this ) );
+
+        this._term.open( document.body );
+        this._term.write( "Hi there!\n" );
+        
+        defer.resolve( this );
     }).bind( this ), true );
 
     parentElement.appendChild( this._iframe );
 
     return defer.promise;
+};
+
+P.destroy = function() {
+    if (this._term) {
+        this._term.destroy();
+        this._term = null;
+    }
+
+    if (this._iframe) {
+        this._iframe.parentNode.removeChild( this._iframe );
+        this._iframe = null;
+    }
 };
