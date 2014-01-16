@@ -10,9 +10,7 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 
-const SOURCE_EDITOR = "resource:///modules/devtools/sourceeditor/source-editor.jsm";
-const SOURCE_EDITOR_IMPL = "resource:///modules/devtools/sourceeditor/source-editor-orion.jsm";
-const SOURCE_EDITOR_OURS = "resource://vigor/source-editor-vigor.jsm";
+let loaded_devtools = false;
 
 const startup = function (data, reason) {
     // register our resource URI prefix
@@ -29,26 +27,17 @@ const startup = function (data, reason) {
 
     // monkey-patch the source editor
     try {
-        Cu.unload( SOURCE_EDITOR );
-        Cu.unload( SOURCE_EDITOR_IMPL );
-
-        let editor_impl = Cu.import( SOURCE_EDITOR_IMPL, null );
-        let editor_ours = Cu.import( SOURCE_EDITOR_OURS, null );
-
-        // remove the original exports
-        for (let key of editor_impl.EXPORTED_SYMBOLS)
-            delete editor_impl[ key ];
-        
-        // copy over ours
-        editor_impl.EXPORTED_SYMBOLS = editor_ours.EXPORTED_SYMBOLS
-        for (let key of editor_ours.EXPORTED_SYMBOLS)
-            editor_impl[ key ] = editor_ours[ key ];
+        const loader = Cu.import(
+                "resource://gre/modules/devtools/Loader.jsm", {}
+            ).devtools._provider.loader;
+        loader.mapping.splice( 0, 0, [
+                "devtools/sourceeditor/editor",
+                "resource://vigor/devtools-editor.js",
+            ] );
+        loaded_devtools = true;
     } catch (caught) {
         // the dev tools probably aren't included in this app
-        // our patch might have failed, though, so try to clean up
-        Cu.unload( SOURCE_EDITOR );
-        Cu.unload( SOURCE_EDITOR_IMPL );
-        Cu.unload( SOURCE_EDITOR_OURS );
+        Cu.reportError( caught );
     }
 };
 
@@ -57,9 +46,16 @@ const shutdown = function (data, reason) {
     if (APP_SHUTDOWN == reason) return;
 
     // unhook the source editor monkey-patch
-    Cu.unload( SOURCE_EDITOR );
-    Cu.unload( SOURCE_EDITOR_IMPL );
-    Cu.unload( SOURCE_EDITOR_OURS );
+    if (loaded_devtools) {
+        const loader = Cu.import(
+                "resource://gre/modules/devtools/Loader.jsm", {}
+            ).devtools._provider.loader;
+        loader.mapping.forEach( function (value, index, array) {
+            if (value[ 1 ].startsWith( "resource://vigor/" ))
+                array.splice( index, 1 );
+        });
+        loaded_devtools = false;
+    }
 
     // unregister the options UI controller
     Cu.import( "resource://vigor/Options.jsm" );
