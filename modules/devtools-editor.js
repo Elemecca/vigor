@@ -7,9 +7,11 @@
 const { Cu, Cc, Ci, Components } = require( "chrome" );
 const promise   = require( "sdk/core/promise" );
 const events    = require( "devtools/shared/event-emitter" );
+Cu.import( "resource://vigor/Vigor.jsm" );
 
 const Editor = function Editor (config) {
     this.config = {};
+    this._vigor = new Vigor();
 
     events.decorate( this );
 };
@@ -17,15 +19,7 @@ const Editor = function Editor (config) {
 const P = Editor.prototype = {};
 
 P.appendTo = function (targetElement) {
-    const defer = promise.defer();
-    const document = targetElement.ownerDocument;
-    const window = document.defaultView;
-    
-    targetElement.appendChild(
-        document.createTextNode( 'Hi there!' ) );
-
-    defer.resolve();
-    return defer.promise;
+    return this._vigor.appendTo( targetElement );
 };
 
 /** Gets the current contents of the document.
