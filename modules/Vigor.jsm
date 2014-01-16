@@ -10,6 +10,8 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/Promise.jsm" );
+Cu.import( "resource://vigor/VimLocator.jsm" );
+Cu.import( "resource://vigor/lib/subprocess.jsm" );
 
 const EXPORTED_SYMBOLS = [ "Vigor" ];
 
@@ -26,6 +28,33 @@ const Vigor = function Vigor() {
 };
 
 const P = Vigor.prototype = {};
+
+P._launchVim = function() {
+    const deferred = Promise.defer();
+
+    VimLocator.locate( (function (result) {
+        if (!result || !result.ok) {
+            deferred.reject( new Error(
+                    "vim executable not found" ) );
+            return;
+        }
+
+        this._process = subprocess.call({
+            command: result.file.path,
+            workdir: result.file.parent.path,
+            stdin: (function (stdin) {
+                this._stdin = stdin;
+                deferred.resolve( this );
+            }).bind( this ),
+            stdout: (function (data) {
+                this._term.write( data );
+            }).bind( this ),
+            bufferedOutput: false,
+        });
+    }).bind( this ) );
+
+    return deferred.promise;
+};
 
 P.appendTo = function (parentElement) {
     const parentDoc = parentElement.ownerDocument;
@@ -54,14 +83,12 @@ P.appendTo = function (parentElement) {
 
         this._term = new window.Terminal({
             });
-        this._term.on( 'data', (function onData (data) {
-            this._term.write( data );
-        }).bind( this ) );
-
         this._term.open( document.body );
-        this._term.write( "Hi there!\n" );
-        
-        defer.resolve( this );
+
+        defer.resolve( this._launchVim().then( (function() {
+            this._term.on( 'data', this._stdin.write );
+            return this;
+        }).bind( this ) ));
     }).bind( this ), true );
 
     parentElement.appendChild( this._iframe );
