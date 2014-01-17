@@ -29,7 +29,10 @@ const Options = function (document) {
 const P = Options.prototype = {};
 
 P.loadPrefs = function() {
-    VimLocator.locate( this._setVim.bind( this ) );
+    VimLocator.locate().then(
+            this._setVim.bind( this ),
+            this._setVim.bind( this )
+        );
 };
 
 P.chooseVim = function() {
@@ -77,7 +80,7 @@ P.setVim = function (file) {
 };
 
 P._setVim = function (result) {
-    if (result) {
+    if (result instanceof VimCheckerResult) {
         this._vim_path.value = result.file.path;
         this._showVimCheck( result );
     } else {

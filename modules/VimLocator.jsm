@@ -12,6 +12,7 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
+Cu.import( "resource://gre/modules/Promise.jsm" );
 Cu.import( "resource://vigor/VimChecker.jsm" );
 
 const PREF_KEY = "extensions.vigor.vimExecutable";
@@ -101,13 +102,15 @@ if (isWindows) addIteratorProvider( function() {
 });
 
 const VimLocator = {
-    search: function (callback) {
+    search: function() {
+        const deferred = Promise.defer();
+
         let best = null;
         function check (file, nope) {
             VimChecker.check( file, function (result) {
                 try {
                     if (result.ok) {
-                        callback.call( null, result );
+                        deferred.resolve( result );
                     } else {
                         best = result;
                         nope.call( null );
@@ -126,7 +129,7 @@ const VimLocator = {
             } catch (caught) {
                 try {
                     if (caught instanceof StopIteration) {
-                        callback.call( null, best );
+                        deferred.reject( best );
                     } else {
                         Cu.reportError( caught );
                         nextProvider();
@@ -136,47 +139,37 @@ const VimLocator = {
                 }
             }
         })();
+
+        return deferred.promise;
     },
 
-    locate: function (callback) {
-        var found = (function (result) {
-            try {
-                if (result) {
-                    Services.prefs.getDefaultBranch( null )
-                        .setComplexValue(
-                                PREF_KEY, Ci.nsIFile, result.file );
-                }
-
-                callback.call( null, result );
-            } catch (caught) {
-                Cu.reportError( caught );
-            }
-        }).bind( this );
-
+    locate: function() {
         if (this._cache)
-            found( this._cache );
+            return Promise.resolve( this._cache );
+
+        const deferred = Promise.defer();
 
         try {
             const pref = Services.prefs.getComplexValue(
                                         PREF_KEY, Ci.nsIFile );
-            VimChecker.check( pref, function (prefResult) {
-                if (prefResult.ok) {
-                    found( prefResult );
+            VimChecker.check( pref, (function (result) {
+                if (result.ok) {
+                    deferred.resolve( result );
                 } else {
-                    this.search( function (searchResult) {
-                        if (searchResult && searchResult.ok) {
-                            found( searchResult );
-                        } else {
-                            found( prefResult );
-                        }
-                    });
+                    deferred.resolve( this.search() );
                 }
-            });
+            }).bind( this ) );
         } catch (caught) {
             // the pref probably doesn't exist
+            deferred.resolve( this.search() );
         }
 
-        this.search( found );
+        return deferred.promise.then( function (result) {
+            this._cache = result;
+            Services.prefs.getDefaultBranch( null )
+                .setComplexValue( PREF_KEY, Ci.nsIFile, result.file );
+            return result;
+        });
     },
 
     setLocation: function (result) {

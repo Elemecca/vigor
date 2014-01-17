@@ -24,36 +24,29 @@ const VIGOR_STYLES = [
 ];
 
 const Vigor = function Vigor() {
-
+    // start looking for the Vim executable now
+    this._vim_exec = VimLocator.locate();
 };
 
 const P = Vigor.prototype = {};
 
 P._launchVim = function() {
-    const deferred = Promise.defer();
-
-    VimLocator.locate( (function (result) {
-        if (!result || !result.ok) {
-            deferred.reject( new Error(
-                    "vim executable not found" ) );
-            return;
-        }
-
+    return this._vim_exec.then( (result) => {
+        const deferred = Promise.defer();
         this._process = subprocess.call({
             command: result.file.path,
             workdir: result.file.parent.path,
-            stdin: (function (stdin) {
+            stdin: (stdin) => {
                 this._stdin = stdin;
                 deferred.resolve( this );
-            }).bind( this ),
-            stdout: (function (data) {
+            },
+            stdout: (data) => {
                 this._term.write( data );
-            }).bind( this ),
+            },
             bufferedOutput: false,
         });
-    }).bind( this ) );
-
-    return deferred.promise;
+        return deferred.promise;
+    } );
 };
 
 P.appendTo = function (parentElement) {
