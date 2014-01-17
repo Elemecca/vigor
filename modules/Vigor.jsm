@@ -23,6 +23,18 @@ const VIGOR_STYLES = [
     "resource://vigor/impl/terminal.css",
 ];
 
+const VIGOR_IFRAME =
+    'data:text/html;charset=utf8,<!DOCTYPE html>'
+    + '<html dir="ltr">'
+    + '  <head>'
+    + [ '<script type="application/javascript" src="'
+            + url + '"></script>' 
+            for (url of VIGOR_SCRIPTS) ].join( "\n" )
+    + [ '<link rel="stylesheet" type="text/css" href="' + url + '" />'
+            for (url of VIGOR_STYLES) ].join( "\n" )
+    + '  <body></body>'
+    + '</html>';
+
 const Vigor = function Vigor() {
     // start looking for the Vim executable now
     this._vim_exec = VimLocator.locate();
@@ -54,19 +66,7 @@ P.appendTo = function (parentElement) {
     
     this._iframe = parentDoc.createElement( 'iframe' );
     this._iframe.setAttribute( 'flex', '1' );
-    this._iframe.setAttribute( 'src',
-            'data:text/html;charset=utf8,<!DOCTYPE html>'
-            + '<html dir="ltr">'
-            + '  <head>'
-            + [ '<script type="application/javascript" src="'
-                    + url + '"></script>' 
-                    for (url of VIGOR_SCRIPTS) ].join( "\n" )
-            + [ '<link rel="stylesheet" type="text/css" href="'
-                    + url + '" />'
-                    for (url of VIGOR_STYLES) ].join( "\n" )
-            + '  <body></body>'
-            + '</html>'
-        );
+    this._iframe.setAttribute( 'src', VIGOR_IFRAME );
 
     const defer = Promise.defer();
     this._iframe.addEventListener( 'load', (function onLoad() {
