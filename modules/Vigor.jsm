@@ -35,9 +35,33 @@ const VIGOR_IFRAME =
     + '  <body></body>'
     + '</html>';
 
+const VIGOR_DEAD_VIM = "\x1Bc" // RIS - reset terminal
+    + "                               /XXXXXXXXXXXXX\\\r\n            "
+    + "                /XXXXXXXXXXXXXXXXXXX\\\r\n                     "
+    + "     /XXX    XXX   XXX    XXX\\\r\n                         /XX"
+    + "XX XX XXXX XXXX XX XXXX\\\r\n                        /XXXXX    "
+    + "XXXX XXXX    XXXXX\\\r\n                        [XXXXX X XXXXX "
+    + "XXXX XXXXXXXX]\r\n                        [XXXXX XX XXX   XXX X"
+    + "XXXXXXX]\r\n                        [XXXXXXXXXXXXXXXXXXXXXXXXXX"
+    + "X]\r\n                        [XXX                     XXX]\r\n"
+    + "                        [XXX HERE LIES A PROCESS XXX]\r\n      "
+    + "                  [XXX KILLED IN ITS PRIME XXX]\r\n            "
+    + "            [XXX  BY A NEGLIGENT ^D  XXX]\r\n                  "
+    + "      [XXX                     XXX]\r\n                        "
+    + "[XXXXXXXXXXXXXXXXXXXXXXXXXXX]\r\n                        [XXXXX"
+    + "XXXXXXXXXXXXXXXXXXXXXX]\r\n                        [ XXXXXXXXX "
+    + "XXXXXXXX XXXXXX ]\r\n                        [X XXXXXXX XXXXXX "
+    + "X XXXX XXX]\r\n   \\//  \\|/ \\/|/   \\/  [XX\\|//XXXXXXXXXX\\X"
+    + "XXXXXXX\\/XX] \\|/  \\/|/ \\/ \\||/\\/\r\n#####################"
+    + "##########################################################\r\n"
+    + "\r\n                                Vim has died.\r\n          "
+    + "                        Restart?\r\n";
+
 const Vigor = function Vigor() {
     // start looking for the Vim executable now
     this._vim_exec = VimLocator.locate();
+
+    this._running = true;
 };
 
 const P = Vigor.prototype = {};
@@ -55,10 +79,31 @@ P._launchVim = function() {
             stdout: (data) => {
                 this._term.write( data );
             },
+            done: (result) => {
+                this._process = null;
+                this._term.off( 'data', this._stdin.write );
+                this._stdin = null;
+
+                if (!this._destroyed)
+                    this._vimDied();
+            },
             bufferedOutput: false,
         });
         return deferred.promise;
     } );
+};
+
+P._vimDied = function() {
+    const onData = (data) => {
+        this._term.off( 'data', onData );
+        this._term.write( "\x1Bc" ); // reset terminal
+        this._launchVim().then( () => {
+            this._term.on( 'data', this._stdin.write );
+        });
+    };
+    
+    this._term.on( 'data', onData );
+    this._term.write( VIGOR_DEAD_VIM );
 };
 
 P.appendTo = function (parentElement) {
