@@ -6,20 +6,23 @@ html {
     font-family: "Consolas", "Menlo", "Ubuntu Mono",
         "DejaVu Sans Mono", "Liberation Mono", monospace;
     font-size: 10pt;
+    white-space: pre;
 
     color: #f0f0f0;
-    background: #000000;
+    background: #888;
 }
 
-body {
+body, .terminal {
     margin:  0;
-    padding: 0.5ex;
+    padding: 0.5em;
 
-    position: absolute;
+    position: fixed;
     top:    0;
     left:   0;
     bottom: 0;
     right:  0;
+
+    overflow: hidden;
 }
 
 .terminal-cursor {
