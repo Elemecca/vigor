@@ -61,6 +61,10 @@ const Vigor = function Vigor() {
     // start looking for the Vim executable now
     this._vim_exec = VimLocator.locate();
 
+    // bind event handler methods
+    this._handleResize  = this._handleResize.bind( this );
+    this._checkResize   = this._checkResize.bind( this );
+
     this._running = true;
 };
 
@@ -116,12 +120,36 @@ P.appendTo = function (parentElement) {
     const defer = Promise.defer();
     this._iframe.addEventListener( 'load', (function onLoad() {
         this._iframe.removeEventListener( 'load', onLoad, true );
+
         const window   = this._iframe.contentWindow.wrappedJSObject;
         const document = window.document;
+        this._window   = window;
+        this._document = document;
+        this._body     = document.body;
+
+        // figure out the size of a character in the current font
+        {   let guide = document.createElement( 'span' );
+            guide.style.visibility = 'hidden';
+            guide.textContent = 'x';
+            document.body.appendChild( guide );
+
+            Object.defineProperties( this, {
+                _charWidth:  { value: guide.scrollWidth  },
+                _charHeight: { value: guide.scrollHeight },
+            });
+            document.body.removeChild( guide );
+        }
+
+        const winSize = this._measureWindow();
+        debugger;
 
         this._term = new window.Terminal({
+                geometry: [ winSize.x, winSize.y ],
             });
         this._term.open( document.body );
+
+        window.addEventListener(
+                "resize", this._handleResize, false );
 
         defer.resolve( this._launchVim().then( (function() {
             this._term.on( 'data', this._stdin.write );
@@ -134,6 +162,32 @@ P.appendTo = function (parentElement) {
     return defer.promise;
 };
 
+P._measureWindow = function() {
+    return {
+        x: Math.floor( this._body.clientWidth  / this._charWidth  ),
+        y: Math.floor( this._body.clientHeight / this._charHeight ),
+    };
+};
+
+P._handleResize = function() {
+    if (!this._resizing) this._resizing = 
+        this._window.setTimeout( this._checkResize, 66 );
+};
+
+P._checkResize = function() {
+    if (this._resizing)
+        this._resizing = null;
+
+    const win = this._measureWindow();
+    if (win.x != this._term.cols
+            || win.y != this._term.rows) {
+        this._term.resize( win.x, win.y );
+        return true;
+    } else {
+        return false;
+    }
+};
+
 P.destroy = function() {
     if (this._term) {
         this._term.destroy();
@@ -141,7 +195,16 @@ P.destroy = function() {
     }
 
     if (this._iframe) {
+        this._window.removeEventListener(
+                'resize', this._handleResize, false );
+        if (this._resizing)
+            this._window.cancelTimeout( this._resizing );
+
         this._iframe.parentNode.removeChild( this._iframe );
-        this._iframe = null;
+
+        this._window    = null;
+        this._document  = null;
+        this._body      = null;
+        this._iframe    = null;
     }
 };
