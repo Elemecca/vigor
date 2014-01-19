@@ -19,6 +19,12 @@ const startup = function (data, reason) {
             .setSubstitution( "vigor", Services.io.newURI(
                     "modules/", null, data.resourceURI ) );
 
+    // set up our addon info module
+    Cu.import( "resource://vigor/VigorAddon.jsm" );
+    for (let key of [ "id", "version", "installPath", "resourceURI" ])
+        VigorAddon[ key ] = data[ key ];
+    Object.freeze( VigorAddon );
+
     // register the options UI controller
     Cu.import( "resource://vigor/Options.jsm" );
     Options.register();
@@ -62,6 +68,7 @@ const shutdown = function (data, reason) {
     Options.unregister();
 
     // unload JavaScript modules
+    Cu.unload( "resource://vigor/VigorAddon.jsm" );
     Cu.unload( "resource://vigor/Options.jsm" );
     Cu.unload( "resource://vigor/VimChecker.jsm" );
     Cu.unload( "resource://vigor/WindowsPEHeader.jsm" );

@@ -14,7 +14,7 @@ html {
 
 body, .terminal {
     margin:  0;
-    padding: 0.5em;
+    padding: 0;
 
     position: fixed;
     top:    0;
@@ -23,6 +23,14 @@ body, .terminal {
     right:  0;
 
     overflow: hidden;
+}
+
+body {
+    margin: 0.5em;
+}
+
+.terminal {
+    padding: 0.5em;
 }
 
 .terminal-cursor {

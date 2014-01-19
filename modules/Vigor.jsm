@@ -10,6 +10,7 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/Promise.jsm" );
+Cu.import( "resource://vigor/VigorAddon.jsm" );
 Cu.import( "resource://vigor/VimLocator.jsm" );
 Cu.import( "resource://vigor/lib/subprocess.jsm" );
 
@@ -73,8 +74,12 @@ const P = Vigor.prototype = {};
 P._launchVim = function() {
     return this._vim_exec.then( (result) => {
         const deferred = Promise.defer();
+        const plugin_path = 
+            VigorAddon.getResourceFile( "modules/impl/vigor.vim" );
+
         this._process = subprocess.call({
             command: result.file.path,
+            arguments: [ "-S", plugin_path ],
             workdir: result.file.parent.path,
             stdin: (stdin) => {
                 this._stdin = stdin;
@@ -141,7 +146,6 @@ P.appendTo = function (parentElement) {
         }
 
         const winSize = this._measureWindow();
-        debugger;
 
         this._term = new window.Terminal({
                 geometry: [ winSize.x, winSize.y ],
@@ -182,10 +186,24 @@ P._checkResize = function() {
     if (win.x != this._term.cols
             || win.y != this._term.rows) {
         this._term.resize( win.x, win.y );
+
+        // post resize control code to Vim
+        this.sendCommand( "set"
+                + " lines=" + this._term.rows
+                + " columns=" + this._term.cols
+            );
+
         return true;
     } else {
         return false;
     }
+};
+
+P.sendCommand = function (command) {
+    if (!this._stdin)
+        throw new Error( "vim process not attached" );
+
+    this._stdin.write( "\x1B_" + command + "\x1B\\" );
 };
 
 P.destroy = function() {
