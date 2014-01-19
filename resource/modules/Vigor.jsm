@@ -10,8 +10,8 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/Promise.jsm" );
-Cu.import( "resource://vigor/VigorAddon.jsm" );
-Cu.import( "resource://vigor/VimLocator.jsm" );
+Cu.import( "resource://vigor/modules/VigorAddon.jsm" );
+Cu.import( "resource://vigor/modules/VimLocator.jsm" );
 Cu.import( "resource://vigor/lib/subprocess.jsm" );
 
 const EXPORTED_SYMBOLS = [ "Vigor" ];
@@ -76,7 +76,7 @@ P._launchVim = function() {
         const deferred = Promise.defer();
 
         const plugin_path = 
-            VigorAddon.getResourceFile( "modules/impl/vigor.vim" );
+            VigorAddon.getResourceFile( "resource/impl/vigor.vim" );
         
         this._process = subprocess.call({
             command: result.file.path,

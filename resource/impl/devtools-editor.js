@@ -7,7 +7,7 @@
 const { Cu, Cc, Ci, Components } = require( "chrome" );
 const promise   = require( "sdk/core/promise" );
 const events    = require( "devtools/shared/event-emitter" );
-Cu.import( "resource://vigor/Vigor.jsm" );
+Cu.import( "resource://vigor/modules/Vigor.jsm" );
 
 const Editor = function Editor (config) {
     this.config = {};

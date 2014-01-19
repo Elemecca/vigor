@@ -10,8 +10,8 @@ const Cu = Components.utils,
 
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
-Cu.import( "resource://vigor/VimChecker.jsm" );
-Cu.import( "resource://vigor/VimLocator.jsm" );
+Cu.import( "resource://vigor/modules/VimChecker.jsm" );
+Cu.import( "resource://vigor/modules/VimLocator.jsm" );
 
 const Options = function (document) {
     this._vim_path   = document.getElementById( "vigor-vim-path" );

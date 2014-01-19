@@ -17,16 +17,16 @@ const startup = function (data, reason) {
     Services.io.getProtocolHandler( "resource" )
             .QueryInterface( Ci.nsIResProtocolHandler )
             .setSubstitution( "vigor", Services.io.newURI(
-                    "modules/", null, data.resourceURI ) );
+                    "resource/", null, data.resourceURI ) );
 
     // set up our addon info module
-    Cu.import( "resource://vigor/VigorAddon.jsm" );
+    Cu.import( "resource://vigor/modules/VigorAddon.jsm" );
     for (let key of [ "id", "version", "installPath", "resourceURI" ])
         VigorAddon[ key ] = data[ key ];
     Object.freeze( VigorAddon );
 
     // register the options UI controller
-    Cu.import( "resource://vigor/Options.jsm" );
+    Cu.import( "resource://vigor/modules/Options.jsm" );
     Options.register();
 
     debugger;
@@ -38,7 +38,7 @@ const startup = function (data, reason) {
             ).devtools._provider.loader;
         loader.mapping.splice( 0, 0, [
                 "devtools/sourceeditor/editor",
-                "resource://vigor/devtools-editor.js",
+                "resource://vigor/impl/devtools-editor.js",
             ] );
         loaded_devtools = true;
     } catch (caught) {
@@ -64,14 +64,14 @@ const shutdown = function (data, reason) {
     }
 
     // unregister the options UI controller
-    Cu.import( "resource://vigor/Options.jsm" );
+    Cu.import( "resource://vigor/modules/Options.jsm" );
     Options.unregister();
 
     // unload JavaScript modules
-    Cu.unload( "resource://vigor/VigorAddon.jsm" );
-    Cu.unload( "resource://vigor/Options.jsm" );
-    Cu.unload( "resource://vigor/VimChecker.jsm" );
-    Cu.unload( "resource://vigor/WindowsPEHeader.jsm" );
+    Cu.unload( "resource://vigor/modules/VigorAddon.jsm" );
+    Cu.unload( "resource://vigor/modules/Options.jsm" );
+    Cu.unload( "resource://vigor/modules/VimChecker.jsm" );
+    Cu.unload( "resource://vigor/modules/WindowsPEHeader.jsm" );
     Cu.unload( "resource://vigor/lib/subprocess.jsm" );
 
     // unregister our resource URI prefix

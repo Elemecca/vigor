@@ -162,7 +162,7 @@ function checkProcess (file, callback) {
 }
 
 function checkHeader (file, callback) {
-    Cu.import( "resource://vigor/WindowsPEHeader.jsm" );
+    Cu.import( "resource://vigor/modules/WindowsPEHeader.jsm" );
     const header = new WindowsPEHeader( file );
     header.read( function() {
         if (!header.error && header.nt.optional.subsystem

@@ -13,7 +13,7 @@ const Cu = Components.utils,
 Cu.import( "resource://gre/modules/Services.jsm" );
 Cu.import( "resource://gre/modules/FileUtils.jsm" );
 Cu.import( "resource://gre/modules/Promise.jsm" );
-Cu.import( "resource://vigor/VimChecker.jsm" );
+Cu.import( "resource://vigor/modules/VimChecker.jsm" );
 
 const PREF_KEY = "extensions.vigor.vimExecutable";
 const isWindows = ("WINNT" == Services.appinfo.OS);
