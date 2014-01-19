@@ -174,13 +174,18 @@ P._measureWindow = function() {
 };
 
 P._handleResize = function() {
-    if (!this._resizing) this._resizing = 
+    if (this._resizing)
+        this._window.clearTimeout( this._resizing );
+    
+    this._resizing = 
         this._window.setTimeout( this._checkResize, 66 );
 };
 
 P._checkResize = function() {
-    if (this._resizing)
+    if (this._resizing) {
+        this._window.clearTimeout( this._resizing );
         this._resizing = null;
+    }
 
     const win = this._measureWindow();
     if (win.x != this._term.cols
