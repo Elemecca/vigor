@@ -74,12 +74,17 @@ const P = Vigor.prototype = {};
 P._launchVim = function() {
     return this._vim_exec.then( (result) => {
         const deferred = Promise.defer();
+
         const plugin_path = 
             VigorAddon.getResourceFile( "modules/impl/vigor.vim" );
-
+        
         this._process = subprocess.call({
             command: result.file.path,
             arguments: [ "-S", plugin_path ],
+            environment: [
+                "LINES="    + this._term.rows,
+                "COLUMNS="  + this._term.cols,
+            ],
             workdir: result.file.parent.path,
             stdin: (stdin) => {
                 this._stdin = stdin;
