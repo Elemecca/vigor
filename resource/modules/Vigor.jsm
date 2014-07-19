@@ -29,7 +29,7 @@ const VIGOR_IFRAME =
     + '<html dir="ltr">'
     + '  <head>'
     + [ '<script type="application/javascript" src="'
-            + url + '"></script>' 
+            + url + '"></script>'
             for (url of VIGOR_SCRIPTS) ].join( "\n" )
     + [ '<link rel="stylesheet" type="text/css" href="' + url + '" />'
             for (url of VIGOR_STYLES) ].join( "\n" )
@@ -75,9 +75,9 @@ P._launchVim = function() {
     return this._vim_exec.then( (result) => {
         const deferred = Promise.defer();
 
-        const plugin_path = 
+        const plugin_path =
             VigorAddon.getResourceFile( "resource/impl/vigor.vim" );
-        
+
         this._process = subprocess.call({
             command: result.file.path,
             arguments: [ "-S", plugin_path ],
@@ -115,14 +115,14 @@ P._vimDied = function() {
             this._term.on( 'data', this._stdin.write );
         });
     };
-    
+
     this._term.on( 'data', onData );
     this._term.write( VIGOR_DEAD_VIM );
 };
 
 P.appendTo = function (parentElement) {
     const parentDoc = parentElement.ownerDocument;
-    
+
     this._iframe = parentDoc.createElement( 'iframe' );
     this._iframe.setAttribute( 'flex', '1' );
     this._iframe.setAttribute( 'src', VIGOR_IFRAME );
@@ -181,8 +181,8 @@ P._measureWindow = function() {
 P._handleResize = function() {
     if (this._resizing)
         this._window.clearTimeout( this._resizing );
-    
-    this._resizing = 
+
+    this._resizing =
         this._window.setTimeout( this._checkResize, 66 );
 };
 

@@ -1,0 +1,3 @@
+
+# be persnickety about whitespace and line endings
+*   text=auto whitespace=trailing-space

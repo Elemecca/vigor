@@ -95,7 +95,7 @@ P._parseOutput = function() {
     }
 
     const lines = raw.split( /\r?\n/ );
-   
+
     const re_feat_line = /^\s*[+-]/;
     const re_feat = /([+-]+)(\S+)/g;
 
@@ -149,7 +149,7 @@ function checkProcess (file, callback) {
         mergeStderr: true,
         done: function (result) {
             clearTimeout( timeout );
-            callback.call( null, new VimCheckerResult( file, (killed 
+            callback.call( null, new VimCheckerResult( file, (killed
                     ? "timed out waiting for 'vim --version' to run"
                     : result ) ) );
         },

@@ -48,7 +48,7 @@ function addIteratorProvider (entries) {
 addIteratorProvider( function() {
     const env = Cc[ "@mozilla.org/process/environment;1" ]
             .getService( Ci.nsIEnvironment );
-    for (let dirPath of 
+    for (let dirPath of
             env.get( "PATH" ).split( isWindows ? ';' : ':' )) {
         let dir = null;
         try {

@@ -165,7 +165,7 @@ P.read = function (callback) {
                 lfanew:     lfanew[ 15 ],
             }),
         });
-        
+
         if (C.IMAGE_DOS_SIGNATURE != this.dos.magic)
             return this._error( "DOS header magic number is wrong" );
 

@@ -50,7 +50,7 @@ P.chooseVim = function() {
     }
 
     this._vim_picker.open( (function (result) {
-        if (Ci.nsIFilePicker.returnOK == result) { 
+        if (Ci.nsIFilePicker.returnOK == result) {
             this.setVim( this._vim_picker.file.path );
         } else {
             this._vim_button.disabled = false;
@@ -67,7 +67,7 @@ P.setVim = function (file) {
         this._vim_button.disabled = false;
         return;
     }
-        
+
 
     this._vim_path.value = file.path;
     this._vim_desc.textContent = "Checking...";
@@ -122,7 +122,7 @@ P._showVimCheck = function (result) {
         if (result.summary) {
             output_box.appendChild(
                     document.createTextNode( result.summary ) );
-            
+
             const keys = Object.keys( result.features ).sort(
                     function (a, b) { return a.localeCompare( b ) } );
             for (var idx = 0; idx < keys.length; idx++) {
